@@ -113,7 +113,7 @@ class ResnetBlock(nn.Module):
 
 
 class Adapter_XL(nn.Module):
-
+    # nums_rb: number of ResnetBlock at each layer (4 layers in total)
     def __init__(self, channels=[320, 640, 1280, 1280], nums_rb=3, cin=64, ksize=3, sk=False, use_conv=True):
         super(Adapter_XL, self).__init__()
         self.unshuffle = nn.PixelUnshuffle(16)
@@ -122,6 +122,8 @@ class Adapter_XL(nn.Module):
         self.body = []
         for i in range(len(channels)):
             for j in range(nums_rb):
+                # Only downsample once at 3rd layer (i=2), 1st ResnetBlock
+                # Only change channels from 1st to 2nd (320->640) and from 2nd to 3rd (640->1280)
                 if (i == 2) and (j == 0):
                     self.body.append(
                         ResnetBlock(channels[i - 1], channels[i], down=True, ksize=ksize, sk=sk, use_conv=use_conv))
